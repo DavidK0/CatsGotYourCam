@@ -42,12 +42,16 @@ internal sealed class CameraSession : ICameraSession {
     }
 
     public void Release() {
+        Release(CameraSessionChangeReason.Released);
+    }
+
+    internal void Release(CameraSessionChangeReason reason) {
         CameraService? owner = _owner;
 
         if(owner is null)
             return;
 
-        owner.Release(this);
+        owner.Release(this, reason);
     }
 
     internal void MarkReleased() {

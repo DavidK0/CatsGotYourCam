@@ -1,6 +1,7 @@
 ﻿namespace CatsGotYourCam;
 
-public sealed class CameraService : ICameraService, IDisposable {
+public sealed class CameraService
+    : ICameraService, ICameraSessionManager, IDisposable {
     private readonly List<CameraSession> _sessions = new();
 
     private bool _disposed;
@@ -11,6 +12,9 @@ public sealed class CameraService : ICameraService, IDisposable {
             : _sessions[^1];
 
     public ICameraSession? ActiveSession =>
+        ActiveSessionInternal;
+
+    CameraSession? ICameraSessionManager.ActiveSession =>
         ActiveSessionInternal;
 
     public event EventHandler<CameraSessionChangedEventArgs>?
@@ -52,6 +56,14 @@ public sealed class CameraService : ICameraService, IDisposable {
     }
 
     internal void Release(CameraSession session) {
+        Release(
+            session,
+            CameraSessionChangeReason.Released);
+    }
+
+    internal void Release(
+        CameraSession session,
+        CameraSessionChangeReason reason) {
         ArgumentNullException.ThrowIfNull(session);
 
         int index = _sessions.IndexOf(session);
@@ -80,7 +92,15 @@ public sealed class CameraService : ICameraService, IDisposable {
         RaiseActiveSessionChanged(
             previousActive,
             resumed,
-            CameraSessionChangeReason.Released);
+            reason);
+    }
+
+    void ICameraSessionManager.Release(
+        CameraSession session,
+        CameraSessionChangeReason reason) {
+        Release(
+            session,
+            reason);
     }
 
     internal bool TryBringToFront(CameraSession session) {
