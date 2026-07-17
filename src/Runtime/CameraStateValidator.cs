@@ -9,11 +9,7 @@ internal sealed class CameraStateValidator : ICameraStateValidator {
         if(!IsFinite(state.PositionEgo) ||
             !IsFinite(state.CameraToEgo) ||
             !double.IsFinite(state.FieldOfView) ||
-            !double.IsFinite(state.NearClip) ||
-            !double.IsFinite(state.FarClip) ||
-            state.FieldOfView <= 0 ||
-            state.NearClip <= 0 ||
-            state.FarClip <= state.NearClip) {
+            state.FieldOfView <= 0) {
             validated = default;
             return false;
         }

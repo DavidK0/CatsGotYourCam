@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.4.2" />
+    <PackageReference Include="StarMap.API" Version="0.3.6" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Brutal.Core.Numerics">
       <HintPath>..\..\..\..\..\..\Program Files\Kitten Space Agency\Brutal.Core.Numerics.dll</HintPath>
     </Reference>

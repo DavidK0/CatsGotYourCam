@@ -43,6 +43,8 @@ internal sealed class PartCameraSource : ICameraSource {
             return false;
         }
 
+        IParentBody parentBody = vehicle.Parent;
+
         doubleQuat partToVehicle =
             cameraPart.Asmb2VehicleAsmb;
 
@@ -56,33 +58,34 @@ internal sealed class PartCameraSource : ICameraSource {
         double3 upVehicle =
             partToVehicle * _module.LocalUp;
 
-        doubleQuat vehicleToEgo =
-            vehicle.Asmb2Ego;
+        doubleQuat bodyToCci =
+            vehicle.GetBody2Cci();
 
-        double3 positionEgo =
-            vehicle.PositionEgo +
-            vehicleToEgo * positionVehicle;
+        doubleQuat cciToCce =
+            parentBody.GetCci2Cce();
 
-        double3 forwardEgo =
-            vehicleToEgo * forwardVehicle;
+        double3 positionEcl =
+            vehicle.GetPositionEcl() +
+            cciToCce * (bodyToCci * positionVehicle);
 
-        double3 upEgo =
-            vehicleToEgo * upVehicle;
+        double3 forwardEcl =
+            cciToCce * (bodyToCci * forwardVehicle);
+
+        double3 upEcl =
+            cciToCce * (bodyToCci * upVehicle);
 
         if(!TryCreateOrientation(
-            forwardEgo,
-            upEgo,
-            out doubleQuat cameraToEgo)) {
+            forwardEcl,
+            upEcl,
+            out doubleQuat cameraToEcl)) {
             state = default;
             return false;
         }
 
         state = new CameraState(
-            PositionEgo: positionEgo,
-            CameraToEgo: cameraToEgo,
-            FieldOfView: _module.FieldOfView,
-            NearClip: _module.NearClip,
-            FarClip: _module.FarClip);
+            PositionEgo: positionEcl,
+            CameraToEgo: cameraToEcl,
+            FieldOfView: _module.FieldOfView);
 
         return true;
     }
@@ -92,23 +95,87 @@ internal sealed class PartCameraSource : ICameraSource {
         Vehicle vehicle) {
         return ReferenceEquals(
             part.Tree,
-            vehicle.PartTree);
+            vehicle.Parts);
     }
 
     private static bool TryCreateOrientation(
         double3 forward,
         double3 up,
         out doubleQuat orientation) {
-        if(VectorMath.IsZero(forward) ||
-            VectorMath.IsZero(up)) {
+
+        return TryCreateLookTo(forward, up, out orientation);
+    }
+
+    private static bool TryCreateLookTo(
+        double3 forward,
+        double3 up,
+        out doubleQuat orientation) {
+
+        const double epsilon = 1e-12;
+
+        double forwardLengthSquared =
+            forward.X * forward.X +
+            forward.Y * forward.Y +
+            forward.Z * forward.Z;
+
+        double upLengthSquared =
+            up.X * up.X +
+            up.Y * up.Y +
+            up.Z * up.Z;
+
+        if(forwardLengthSquared <= epsilon ||
+           upLengthSquared <= epsilon) {
             orientation = default;
             return false;
         }
 
-        orientation = doubleQuat.CreateLookTo(
-            forward,
-            up);
+        double inverseForwardLength = 1.0 / Math.Sqrt(forwardLengthSquared);
+
+        double3 zAxis = new double3(
+            forward.X * inverseForwardLength,
+            forward.Y * inverseForwardLength,
+            forward.Z * inverseForwardLength);
+
+        // right = normalize(cross(up, forward))
+        double3 xAxis = Cross(up, zAxis);
+
+        double rightLengthSquared =
+            xAxis.X * xAxis.X +
+            xAxis.Y * xAxis.Y +
+            xAxis.Z * xAxis.Z;
+
+        // forward and up are parallel or nearly parallel.
+        if(rightLengthSquared <= epsilon) {
+            orientation = default;
+            return false;
+        }
+
+        double inverseRightLength = 1.0 / Math.Sqrt(rightLengthSquared);
+
+        xAxis = new double3(
+            xAxis.X * inverseRightLength,
+            xAxis.Y * inverseRightLength,
+            xAxis.Z * inverseRightLength);
+
+        // Rebuild up so the basis is orthonormal.
+        double3 yAxis = Cross(zAxis, xAxis);
+
+        double4x4 rotationMatrix = new double4x4(
+            xAxis.X, xAxis.Y, xAxis.Z, 0.0,
+            yAxis.X, yAxis.Y, yAxis.Z, 0.0,
+            zAxis.X, zAxis.Y, zAxis.Z, 0.0,
+            0.0, 0.0, 0.0, 1.0);
+
+        orientation = doubleQuat.Normalize(
+            doubleQuat.CreateFromRotationMatrix(rotationMatrix));
 
         return true;
+    }
+
+    private static double3 Cross(double3 left, double3 right) {
+        return new double3(
+            left.Y * right.Z - left.Z * right.Y,
+            left.Z * right.X - left.X * right.Z,
+            left.X * right.Y - left.Y * right.X);
     }
 }

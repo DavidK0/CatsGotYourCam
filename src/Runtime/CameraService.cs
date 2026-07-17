@@ -55,12 +55,6 @@ public sealed class CameraService
         return session;
     }
 
-    internal void Release(CameraSession session) {
-        Release(
-            session,
-            CameraSessionChangeReason.Released);
-    }
-
     internal void Release(
         CameraSession session,
         CameraSessionChangeReason reason) {
@@ -98,9 +92,7 @@ public sealed class CameraService
     void ICameraSessionManager.Release(
         CameraSession session,
         CameraSessionChangeReason reason) {
-        Release(
-            session,
-            reason);
+        Release(session, reason);
     }
 
     internal bool TryBringToFront(CameraSession session) {

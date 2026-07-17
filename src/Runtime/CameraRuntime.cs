@@ -9,6 +9,7 @@ internal sealed class CameraRuntime : IDisposable {
     private readonly ICameraStateValidator _validator;
 
     private int _contextFailureFrames;
+    private long _frameIndex;
     private bool _disposed;
 
     public CameraRuntime(
@@ -33,10 +34,12 @@ internal sealed class CameraRuntime : IDisposable {
                 nameof(validator));
     }
 
-    public void Update() {
+    public void Update(double deltaTime) {
         ObjectDisposedException.ThrowIf(
             _disposed,
             this);
+
+        _frameIndex++;
 
         while(true) {
             CameraSession? session =
@@ -59,15 +62,21 @@ internal sealed class CameraRuntime : IDisposable {
                 continue;
             }
 
-            if(TryApplySource(session, source))
+            if(TryApplySource(
+                session,
+                source,
+                deltaTime))
                 return;
         }
     }
 
     private bool TryApplySource(
         CameraSession session,
-        ICameraSource source) {
+        ICameraSource source,
+        double deltaTime) {
         if(!_contextProvider.TryGetContext(
+            deltaTime,
+            _frameIndex,
             out CameraEvaluationContext context)) {
             _contextFailureFrames++;
 

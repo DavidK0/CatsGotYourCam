@@ -6,6 +6,4 @@ namespace CatsGotYourCam;
 public readonly record struct CameraState(
     double3 PositionEgo,
     doubleQuat CameraToEgo,
-    double FieldOfView,
-    double NearClip,
-    double FarClip);
+    double FieldOfView);

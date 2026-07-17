@@ -68,20 +68,28 @@ public sealed class GameCameraAdapter
 
         CameraState state = _activeState;
 
-        camera.PositionEgo = state.PositionEgo;
+        camera.PositionEcl = state.PositionEgo;
         camera.LocalRotation = state.CameraToEgo;
 
         ApplyFieldOfView(camera, state.FieldOfView);
-        ApplyClipPlanes(
-            camera,
-            state.NearClip,
-            state.FarClip);
     }
 
     private static Viewport? GetMainViewport() {
-        _mainViewport = Program.GetMainViewport();
-
         return _mainViewport;
+    }
+
+    internal static Viewport? MainViewport =>
+        _mainViewport;
+
+    internal static void SetMainViewport(Viewport viewport) {
+        if(viewport.Index != 0)
+            return;
+
+        _mainViewport = viewport;
+    }
+
+    internal static void ClearMainViewport() {
+        _mainViewport = null;
     }
 
     private static void PrepareFixedCamera(Viewport viewport) {
@@ -92,16 +100,7 @@ public sealed class GameCameraAdapter
     private static void ApplyFieldOfView(
         Camera camera,
         double fieldOfView) {
-        camera.SetFieldOfView(fieldOfView);
-    }
-
-    private static void ApplyClipPlanes(
-        Camera camera,
-        double nearClip,
-        double farClip) {
-        _ = camera;
-        _ = nearClip;
-        _ = farClip;
+        camera.SetFieldOfView((float)fieldOfView);
     }
 }
 

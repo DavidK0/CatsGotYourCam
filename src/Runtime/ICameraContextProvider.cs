@@ -1,5 +1,8 @@
 namespace CatsGotYourCam;
 
 internal interface ICameraContextProvider {
-    bool TryGetContext(out CameraEvaluationContext context);
+    bool TryGetContext(
+        double deltaTime,
+        long frameIndex,
+        out CameraEvaluationContext context);
 }
