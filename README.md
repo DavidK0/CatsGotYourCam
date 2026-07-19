@@ -11,7 +11,7 @@ Use this mod when you are building something like:
 - Replay, spectator, or mission-scripted cameras
 - Any feature that needs to control the game camera without conflicting with other camera mods
 
-**Compatible with KSA v2026.6.9.4601**
+**Compatible with KSA v2026.7.6.4939**
 
 ## For players
 
