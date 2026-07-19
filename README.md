@@ -15,9 +15,6 @@ Use this mod when you are building something like:
 
 ## For players
 
-<details>
-<summary>How to install</summary>
-
 1. Install [StarMap](https://github.com/StarMapLoader/StarMap/)
    1. Download and unzip [the latest release of StarMap](https://github.com/StarMapLoader/StarMap/releases/latest)
    2. Run the .exe and follow the instructions
@@ -32,7 +29,6 @@ Use this mod when you are building something like:
 ```
 4. Install other mods that depend on this mod.
 5. Run KSA through StarMap
-</details>
 
 ## For modders
 
