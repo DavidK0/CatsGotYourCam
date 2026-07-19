@@ -1,0 +1,4 @@
+  name = "CatsGotYourCam"
+
+  [StarMap]
+  EntryAssembly = "CatsGotYourCam"

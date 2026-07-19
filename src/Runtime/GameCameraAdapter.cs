@@ -6,6 +6,7 @@ namespace CatsGotYourCam;
 public sealed class GameCameraAdapter
     : IDisposable, IGameCameraAdapter {
     private static Viewport? _mainViewport;
+    private static bool _isControllingMainViewport;
 
     private CameraState _activeState;
     private bool _hasActiveState;
@@ -31,6 +32,7 @@ public sealed class GameCameraAdapter
 
         _activeState = state;
         _hasActiveState = true;
+        _isControllingMainViewport = true;
 
         PrepareFixedCamera(viewport);
         ApplyActiveState(viewport);
@@ -38,6 +40,7 @@ public sealed class GameCameraAdapter
 
     public void RestoreDefaultCamera() {
         _hasActiveState = false;
+        _isControllingMainViewport = false;
 
         Viewport? viewport = GetMainViewport();
 
@@ -90,6 +93,13 @@ public sealed class GameCameraAdapter
 
     internal static void ClearMainViewport() {
         _mainViewport = null;
+        _isControllingMainViewport = false;
+    }
+
+    internal static bool ShouldSuppressFixedController(
+        Viewport viewport) {
+        return _isControllingMainViewport &&
+            viewport.Index == 0;
     }
 
     private static void PrepareFixedCamera(Viewport viewport) {

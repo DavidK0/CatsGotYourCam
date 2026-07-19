@@ -17,6 +17,7 @@ public sealed class CatsGotYourCamEntryPoint {
 
         _harmony = new Harmony("mypet.catsgotyourcam");
         _harmony.CreateClassProcessor(typeof(ViewportOnFramePatch)).Patch();
+        _harmony.CreateClassProcessor(typeof(FixedControllerOnFramePatch)).Patch();
     }
 
     [StarMapAfterOnFrame]
@@ -41,6 +42,14 @@ public sealed class CatsGotYourCamEntryPoint {
     private static class ViewportOnFramePatch {
         private static void Postfix(Viewport __instance) {
             GameCameraAdapter.SetMainViewport(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(FixedController), nameof(FixedController.OnFrame))]
+    private static class FixedControllerOnFramePatch {
+        private static bool Prefix(Viewport inViewport) {
+            return !GameCameraAdapter.ShouldSuppressFixedController(
+                inViewport);
         }
     }
 }
